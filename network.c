@@ -186,46 +186,70 @@ int bind_to_tcp6_port(int port, int backlog)
 
 /*--------------------------------------------------------------------*/
 
-int *bind_to_all(const char *ipaddr, const char *port, int backlog)
+int *bind_to_all(char *hostnames[], int n_hosts, const char *port, int backlog)
 {
 	struct sockaddr_storage	addr;
 	struct addrinfo			hints, *ai, *ai0;
 	int						*result = 0;
-
+  const char *ipaddr;
+  int count_all = 0;
+  int i = 0;
+  
 	memset(&hints, 0, sizeof(hints));
 	hints.ai_family = PF_UNSPEC;
 	hints.ai_flags = AI_ADDRCONFIG | AI_PASSIVE;
 
-	int res = getaddrinfo(ipaddr, port, &hints, &ai);
-	if (res) {
-		fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(res));
-		return NULL;
-	}
-	ai0 = ai;
+  int current = 0;
 
-	/* count the addrinfo objects */
-	int count = 0;
-	while (ai) {
-		++count;
-		ai = ai->ai_next;
-	}
+  for (i=0; i < n_hosts; i++) {
+    ipaddr = hostnames[i];
 
-	/* make some memory for FDs */
-	result = (int *)calloc(count + 1, sizeof(int));
+    int res = getaddrinfo(ipaddr, port, &hints, &ai);
+    if (res) {
+      fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(res));
+      return NULL;
+    }
+    ai0 = ai;
 
-	int current = 0;
-	for (ai = ai0 ; ai; ai = ai->ai_next) {
-		if (ai->ai_socktype != SOCK_DGRAM && ai->ai_socktype != SOCK_STREAM) continue;
-
-		int addrlen = ai->ai_addrlen;
-		memset(&addr, 0, sizeof(addr));
-		memcpy(&addr, ai->ai_addr, addrlen);
-
-		int fd = bind_to_sockaddr((struct sockaddr *)&addr, addrlen, ai->ai_socktype, backlog);
-		if (fd >= 0) {
-			result[current++] = fd;
-		}
-	}
+    /* count the addrinfo objects */
+    int count = 0;
+    while (ai) {
+      ++count;
+      ai = ai->ai_next;
+    }
+  
+    /* make some memory for FDs */
+    if (i == 0) {
+      result = (int *)calloc(count + 1, sizeof(int));
+      if (result == NULL) {
+        fprintf(stderr, "Error allocating initial memory for fds\n");
+        exit(99);
+      }
+      count_all += count;
+    } else {
+      count_all += count;
+      void *temp = realloc(result, (count_all + 1) * sizeof(int));
+      if (temp) {
+        result = temp;
+      } else {
+        fprintf(stderr, "Error allocating memory for fds\n");
+        exit(99);
+      }
+    }
+  
+    for (ai = ai0 ; ai; ai = ai->ai_next) {
+      if (ai->ai_socktype != SOCK_DGRAM && ai->ai_socktype != SOCK_STREAM) continue;
+  
+      int addrlen = ai->ai_addrlen;
+      memset(&addr, 0, sizeof(addr));
+      memcpy(&addr, ai->ai_addr, addrlen);
+  
+      int fd = bind_to_sockaddr((struct sockaddr *)&addr, addrlen, ai->ai_socktype, backlog);
+      if (fd >= 0) {
+        result[current++] = fd;
+      }
+    }
+  }
 
 	/* clean up and terminate */
 	freeaddrinfo(ai0);
