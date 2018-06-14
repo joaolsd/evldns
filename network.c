@@ -186,7 +186,7 @@ int bind_to_tcp6_port(int port, int backlog)
 
 /*--------------------------------------------------------------------*/
 
-int *bind_to_all(char *hostnames[], int n_hosts, const char *port, int backlog)
+int *bind_to_all(const char *hostname, const char *port, int backlog)
 {
 	struct sockaddr_storage	addr;
 	struct addrinfo			hints, *ai, *ai0;
@@ -201,8 +201,7 @@ int *bind_to_all(char *hostnames[], int n_hosts, const char *port, int backlog)
 
   int current = 0;
 
-  for (i=0; i < n_hosts; i++) {
-    ipaddr = hostnames[i];
+    ipaddr = hostname;
 
     int res = getaddrinfo(ipaddr, port, &hints, &ai);
     if (res) {
@@ -249,7 +248,6 @@ int *bind_to_all(char *hostnames[], int n_hosts, const char *port, int backlog)
         result[current++] = fd;
       }
     }
-  }
 
 	/* clean up and terminate */
 	freeaddrinfo(ai0);
