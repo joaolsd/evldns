@@ -186,24 +186,25 @@ int bind_to_tcp6_port(int port, int backlog)
 
 /*--------------------------------------------------------------------*/
 
-<<<<<<< HEAD
-int *bind_to_all(const char *hostname, const char *port, int backlog)
-=======
-int *bind_to_all(const char *ipaddr, const char *port, int backlog)
->>>>>>> parent of 1c97452... Changes to support binding to more than one address (several -h options)
+int *bind_to_all(const char *hostnames[], int n_hosts, const char *port, int backlog)
 {
 	struct sockaddr_storage	addr;
 	struct addrinfo			hints, *ai, *ai0;
 	int						*result = 0;
+  
+  const char *ipaddr;
+  int count_all = 0;
+  int i = 0;
+	
 
 	memset(&hints, 0, sizeof(hints));
 	hints.ai_family = PF_UNSPEC;
 	hints.ai_flags = AI_ADDRCONFIG | AI_PASSIVE;
 
-<<<<<<< HEAD
   int current = 0;
-
-    ipaddr = hostname;
+	
+  for (i=0; i < n_hosts; i++) {
+    ipaddr = hostnames[i];
 
     int res = getaddrinfo(ipaddr, port, &hints, &ai);
     if (res) {
@@ -218,7 +219,7 @@ int *bind_to_all(const char *ipaddr, const char *port, int backlog)
       ++count;
       ai = ai->ai_next;
     }
-  
+
     /* make some memory for FDs */
     if (i == 0) {
       result = (int *)calloc(count + 1, sizeof(int));
@@ -237,52 +238,20 @@ int *bind_to_all(const char *ipaddr, const char *port, int backlog)
         exit(99);
       }
     }
-  
+
     for (ai = ai0 ; ai; ai = ai->ai_next) {
       if (ai->ai_socktype != SOCK_DGRAM && ai->ai_socktype != SOCK_STREAM) continue;
-  
+
       int addrlen = ai->ai_addrlen;
       memset(&addr, 0, sizeof(addr));
       memcpy(&addr, ai->ai_addr, addrlen);
-  
+
       int fd = bind_to_sockaddr((struct sockaddr *)&addr, addrlen, ai->ai_socktype, backlog);
       if (fd >= 0) {
         result[current++] = fd;
       }
     }
-=======
-	int res = getaddrinfo(ipaddr, port, &hints, &ai);
-	if (res) {
-		fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(res));
-		return NULL;
-	}
-	ai0 = ai;
-
-	/* count the addrinfo objects */
-	int count = 0;
-	while (ai) {
-		++count;
-		ai = ai->ai_next;
-	}
-
-	/* make some memory for FDs */
-	result = (int *)calloc(count + 1, sizeof(int));
-
-	int current = 0;
-	for (ai = ai0 ; ai; ai = ai->ai_next) {
-		if (ai->ai_socktype != SOCK_DGRAM && ai->ai_socktype != SOCK_STREAM) continue;
-
-		int addrlen = ai->ai_addrlen;
-		memset(&addr, 0, sizeof(addr));
-		memcpy(&addr, ai->ai_addr, addrlen);
-
-		int fd = bind_to_sockaddr((struct sockaddr *)&addr, addrlen, ai->ai_socktype, backlog);
-		if (fd >= 0) {
-			result[current++] = fd;
-		}
-	}
->>>>>>> parent of 1c97452... Changes to support binding to more than one address (several -h options)
-
+  }
 	/* clean up and terminate */
 	freeaddrinfo(ai0);
 	result[current++] = -1;

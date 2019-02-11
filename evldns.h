@@ -116,11 +116,7 @@ extern int bind_to_udp4_port(int port);
 extern int bind_to_udp6_port(int port);
 extern int bind_to_tcp4_port(int port, int backlog);
 extern int bind_to_tcp6_port(int port, int backlog);
-<<<<<<< HEAD
-extern int *bind_to_all(const char *hostname, const char *port, int backlog);
-=======
-extern int *bind_to_all(const char *addr, const char *port, int backlog);
->>>>>>> parent of 1c97452... Changes to support binding to more than one address (several -h options)
+extern int *bind_to_all(const char *hostnames[], int n_hosts, const char *port, int backlog);
 extern int socket_is_tcp(int fd);
 
 #ifdef __cplusplus
