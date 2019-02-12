@@ -178,7 +178,7 @@ int bind_to_tcp6_port(int port, int backlog)
 
 /*--------------------------------------------------------------------*/
 
-int *bind_to_all(const char **ipaddr, int num_ip, const char *port, int backlog)
+int *bind_to_all(char **ipaddr, int num_ip, const char *port, int backlog)
 {
 	struct sockaddr_storage	addr;
 	struct addrinfo			hints, *ai;
