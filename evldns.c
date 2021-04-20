@@ -546,6 +546,7 @@ evldns_response(const ldns_pkt *req, ldns_pkt_rcode rcode)
 {
 	ldns_pkt *p = ldns_pkt_new();
 	ldns_rr_list *q = ldns_rr_list_clone(ldns_pkt_question(req));
+  ldns_pkt_opcode opcode = ldns_pkt_get_opcode(req);
 
 	ldns_pkt_set_id(p, ldns_pkt_id(req));		/* copy ID field */
   if (opcode == LDNS_PACKET_QUERY) {
