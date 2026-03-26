@@ -16,16 +16,20 @@ include_HEADERS = evldns.h
 bin_PROGRAMS	= chaos as112d oas112d fixed
 
 chaos_SOURCES	= chaos.c
-chaos_LDFLAGS	= -rdynamic -levldns -levent -lldns
+chaos_LDFLAGS	= -rdynamic
+chaos_LDADD	= libevldns.la -levent -lldns
 
 as112d_SOURCES	= as112d.c
-as112d_LDFLAGS	= -rdynamic -levldns -levent -lldns
+as112d_LDFLAGS	= -rdynamic
+as112d_LDADD	= libevldns.la -levent -lldns
 
 oas112d_SOURCES	= oas112d.c
-oas112d_LDFLAGS	= -rdynamic -levldns -levent -lldns
+oas112d_LDFLAGS	= -rdynamic
+oas112d_LDADD	= libevldns.la -levent -lldns
 
 fixed_SOURCES	= fixed.c
-fixed_LDFLAGS	= -rdynamic -levldns -levent -lldns
+fixed_LDFLAGS	= -rdynamic
+fixed_LDADD	= libevldns.la -levent -lldns
 
 lib_LTLIBRARIES	= libevldns.la mod_mangler.la mod_txtrec.la mod_arec.la mod_myip.la
 
